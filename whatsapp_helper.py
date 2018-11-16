@@ -1,6 +1,8 @@
 import time
 from selenium import webdriver
 from enum import Flag, auto
+import pickle
+import threading
 
 
 class Page(Flag):
@@ -44,7 +46,7 @@ class WhatsApp:
                 for contact in contacts:
                     try:
                         style = contact.get_attribute('style')
-                        if style.split(sep=';')[1].split(sep=':')[1] == " 72px":    # To get first element
+                        if style.split(sep=';')[2].split(sep=':')[1] == " translateY(72px)":    # To get first element
                             contact.click()
                             print("Chat found")
                             self.page = Page.PERSONAL_CHAT
@@ -56,7 +58,7 @@ class WhatsApp:
         print("Chat not found")
 
     def check_if_online(self):
-        assert self.page == Page.PERSONAL_CHAT
+        assert self.page & Page.PERSONAL_CHAT == Page.PERSONAL_CHAT
         try:
             if self.driver.find_element_by_xpath("//div[@class='_3sgkv Gd51Q']").text == "online":
                 return True
@@ -64,6 +66,31 @@ class WhatsApp:
                 return False
         except:
             return False
+
+    def observe_online_activity(self, interval, file_path, logging=False):
+        record = {}
+        for i in range(int(86400 / interval)):
+            current_time_sec = int(time.time())
+            current_time = time.localtime()
+            if self.check_if_online():
+                if logging:
+                    print("{0}:{1}:{2} - online".
+                          format(current_time.tm_hour, current_time.tm_min, current_time.tm_sec))
+                is_online = True
+            else:
+                if logging:
+                    print("{0}:{1}:{2} - not online".
+                          format(current_time.tm_hour, current_time.tm_min, current_time.tm_sec))
+                is_online = False
+            record[current_time_sec] = is_online
+            thread1 = threading.Thread(target=dump_record, args=[record, file_path])
+            thread1.start()
+            time.sleep(interval)
+
+
+def dump_record(record, file_path):
+    with open(file_path, "wb") as file:
+        pickle.dump(record, file)
 
 # pg = Page.LANDING
 # print(pg)
