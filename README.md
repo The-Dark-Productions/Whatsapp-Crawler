@@ -1,8 +1,8 @@
 # Whatsapp-Crawler
-(Probably useless) Analytics on Whatsapp
+Analytics on Whatsapp usage
 
 --------------------------------------------
-Quite interesting logic and algorithms implemented to develop analytics on the usage of Whatsapp by its users.
+Track how much time your contacts spend online on hatsapp.
 
 Use the helper class to traverse whatsapp web 
 
